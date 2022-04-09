@@ -14,6 +14,7 @@ import { TallyInput } from './_Source';
           "class": "AtemSwitcher"
         }
     }, (service) => {
+        if(service.txt.class !== "AtemSwitcher") return;
         addDiscoveredDevice({
             name: service.name,
             addresses: service.addresses.concat(service.fqdn)
