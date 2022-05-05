@@ -49,6 +49,9 @@ const char* AP_password ="";
 // Enables the GPIO pinout
 #define TALLY_EXTRA_OUTPUT false
 
+// Enables the External NeoPixel
+#define NEO_PIXEL false
+
 /* END OF USER VARIABLES
  *  
  */
@@ -67,10 +70,21 @@ const unsigned long reconnectInterval = 5000;
 unsigned long currentReconnectTime = 0;
 bool isReconnecting = false;
 
+//Extra Output
 #if TALLY_EXTRA_OUTPUT
 const int led_program = 10;
 const int led_preview = 26; //OPTIONAL Led for preview on pin G26
 const int led_aux = 36;     //OPTIONAL Led for aux on pin G36
+#endif
+
+//External NeoPixel
+#if NEO_PIXEL
+#define NEO_PIXEL_PIN 33 //NeoPixel data pin
+#define NUM_LEDS      1  //Number of LEDS
+#define BRIGHTNESS    0  //Brightness
+#define LED_TYPE      WS2811  //Led Type
+#define COLOR_ORDER   GRB
+CRGB leds[NUM_LEDS];
 #endif
 
 String prevType = ""; // reduce display flicker by storing previous state
@@ -334,6 +348,8 @@ void drawMultiple(int arr[], int colors[], int param_times, int delays) {
 
 // Determine if the device is currently in preview, program, or both
 void evaluateMode() {
+  int backgroundColor;
+
   if(actualType != prevType) {
     //M5.dis.clear();
     actualColor.replace("#", "");
@@ -345,7 +361,7 @@ void evaluateMode() {
     int b = colorNumber & 0xFF;
     
     if (actualType != "") {
-      int backgroundColor = 0x10000 * g + 0x100 * r + b;
+      backgroundColor = 0x10000 * g + 0x100 * r + b;
       int currColor[] = {backgroundColor, numbercolor};
       logger("Current color: " + String(backgroundColor), "info");
       //logger("Current camNumber: " + String(camNumber), "info");
@@ -375,6 +391,29 @@ void evaluateMode() {
       digitalWrite (led_aux, LOW);
     }
     #endif
+
+    #if NEO_PIXEL
+    if (actualType == "\"program\"") {
+      for(int j = 0; j < NUM_LEDS; j++) { 
+      leds[j] = backgroundColor;
+      }
+      FastLED.show();
+    } else if (actualType == "\"preview\"") {
+      for(int j = 0; j < NUM_LEDS; j++) { 
+      leds[j] = backgroundColor;
+      }
+      FastLED.show();
+    } else if (actualType == "\"aux\"") {
+      for(int j = 0; j < NUM_LEDS; j++) { 
+      leds[j] = backgroundColor;
+      }
+      FastLED.show();
+    } else {
+      FastLED.clear();
+      FastLED.show();
+    }
+    #endif
+
     logger("Device is in " + actualType + " (color " + actualColor + " priority " + String(actualPriority) + ")", "info");
     // This is a hack to compensate for the Matrix needing GRB.
     logger(" r: " + String(g) + " g: " + String(r) + " b: " + String(b), "info");
@@ -739,6 +778,12 @@ void setup() {
   
   //Save battery by turning off BlueTooth
   btStop();
+
+  //External NeoPixel Setup
+  #if NEO_PIXEL
+  FastLED.addLeds<LED_TYPE, NEO_PIXEL_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+  FastLED.setBrightness(  BRIGHTNESS );
+  #endif
 
   uint64_t chipid = ESP.getEfuseMac();
   listenerDeviceName = "m5Atom-" + String((uint16_t)(chipid>>32)) + String((uint32_t)chipid);
