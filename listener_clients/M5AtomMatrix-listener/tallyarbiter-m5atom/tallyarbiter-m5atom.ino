@@ -548,20 +548,44 @@ void socket_Reassign(String payload) {
   preferences.end();
   setDeviceName();
 }
+
 void socket_Flash() {
   //flash the screen white 3 times
   logger("The device flashed.", "info-quiet");
   for (int k = 0; k < 3; k++) {
     //Matrix Off
     drawNumber(icons[1], alloffcolor);
+    
+    //Neo Pixel Off
+    #if NEO_PIXEL  
+      FastLED.clear();
+      FastLED.show();
+    #endif
+
     delay(100);
 
     //Matrix On
     drawNumber(icons[1], flashcolor);
+
+    //Neo Pixel On
+    #if NEO_PIXEL      
+      for(int j = 0; j < NUM_LEDS; j++) { 
+      leds[j] = GRB_COLOR_WHITE;
+      }
+      FastLED.show();
+    #endif
+
     delay(100);
   }
   //Matrix Off
   drawNumber(icons[1], alloffcolor);
+
+  //Neo Pixel Off
+  #if NEO_PIXEL  
+    FastLED.clear();
+    FastLED.show();
+  #endif
+
   delay(100);
   //then resume normal operation
   evaluateMode();
