@@ -551,18 +551,16 @@ void socket_Reassign(String payload) {
 void socket_Flash() {
   //flash the screen white 3 times
   logger("The device flashed.", "info-quiet");
-  drawNumber(icons[1], alloffcolor);
-  delay(100);
-  drawNumber(icons[1], flashcolor);
-  delay(100);
-  drawNumber(icons[1], alloffcolor);
-  delay(100);
-  drawNumber(icons[1], flashcolor);
-  delay(100);
-  drawNumber(icons[1], alloffcolor);
-  delay(100);
-  drawNumber(icons[1], flashcolor);
-  delay(100);
+  for (int k = 0; k < 3; k++) {
+    //Matrix Off
+    drawNumber(icons[1], alloffcolor);
+    delay(100);
+
+    //Matrix On
+    drawNumber(icons[1], flashcolor);
+    delay(100);
+  }
+  //Matrix Off
   drawNumber(icons[1], alloffcolor);
   delay(100);
   //then resume normal operation
